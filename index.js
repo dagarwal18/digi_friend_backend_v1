@@ -5,9 +5,15 @@ const mongoose = require("mongoose");
 const { userRouter } = require("./routes/user.js");
 const { courseRouter } = require("./routes/course.js");
 const { adminRouter } = require("./routes/admin.js");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 
 app.use(express.json());
 
