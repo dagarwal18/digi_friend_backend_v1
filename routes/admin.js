@@ -6,6 +6,15 @@ const bcrypt = require("bcrypt");
 const { jwt, adminAuth, JWT_ADMIN_SECRET } = require("../auth.js");
 const { z } = require("zod");
 const { upload } = require("../middleware/multer.middleware.js");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+require("dotenv").config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
+});
 
 adminRouter.post("/signup", async function (req, res) {
   const requiredBody = z.object({
@@ -114,12 +123,40 @@ adminRouter.post(
       });
     }
 
+    const uploadResults = await cloudinary.uploader.upload(
+      `temp/${req.file.filename}`,
+      {
+        resource_type: "video",
+        public_id: req.file.filename,
+        overwrite: true,
+      },
+    ).catch((error) => {
+      console.log(error);
+      res.json({
+        message: "error uploading file to database",
+      });
+    });
+
+    console.log(uploadResults);
+    if (uploadResults.url) {
+      fs.unlink(`temp/${req.file.filename}`, (err) => {
+        if (err) {
+          console.error(
+            "Error deleting the file:" + `temp/${req.file.filename}\n`,
+            err,
+          );
+        } else {
+          console.log("File deleted successfully!");
+        }
+      });
+    }
+
     try {
       await CourseModel.create({
         title: title,
         description: description,
         price: price,
-        imageUrl: req.file.path,
+        videoUrl: uploadResults.url,
         creatorId: creatorId,
       });
     } catch (e) {
