@@ -16,6 +16,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // const uri = process.env.MONGO_URL ||
 // "mongodb+srv://dakshagarwal:daksh7743@cluster0.nmtmv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
